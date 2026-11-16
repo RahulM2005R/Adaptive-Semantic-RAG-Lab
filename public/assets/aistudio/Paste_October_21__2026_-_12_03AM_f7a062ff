@@ -1,0 +1,700 @@
+# MASTER BUILD PROMPT — ADAPTIVE SEMANTIC RAG LAB
+
+## 1. ROLE AND MISSION
+
+Act as a senior AI/ML engineer, RAG researcher, full-stack developer, and research visualization designer.
+
+Build a complete, functional, research-oriented web application named:
+
+**Adaptive Semantic RAG Lab: Query–Document Semantic Alignment for Hallucination Reduction**
+
+This is a prototype for a final-year engineering research project titled:
+
+**“LLM Hallucination Reduction in Retrieval-Augmented Generation using Adaptive Semantic Chunking.”**
+
+The system must demonstrate how a user-uploaded document and a natural-language query can be represented semantically, aligned against one another, ranked by relevance and coverage, and used to generate answers grounded in original document evidence.
+
+Do not build only a frontend mockup. Implement the actual document-processing, chunking, semantic analysis, retrieval, scoring, evidence-grounding, and evaluation pipeline.
+
+Use Google AI Studio Build mode and its supported full-stack environment. Prefer React, TypeScript, and a secure server-side runtime. Use Gemini through a server-side API integration for semantic analysis and answer generation. Use actual embedding vectors and cosine similarity where supported.
+
+Do not expose API keys in frontend code, browser storage, logs, or client-visible configuration.
+
+## 2. CORE RESEARCH IDEA
+
+Conventional chunking often divides text into fixed-size units. This can split related concepts, separate attributes from entities, or break important relationships.
+
+The proposed system should use an AI-assisted semantic representation to understand the meaning and structure of document content and user queries.
+
+For example:
+
+Document:
+“The apple is red. It contains fibre and vitamin C.”
+
+User query:
+“What is the apple's colour and what nutrients does it contain?”
+
+The system should identify concepts such as:
+
+- Entity: apple
+- Attribute: colour
+- Attribute value: red
+- Requested information: nutrients
+- Nutritional facts: fibre and vitamin C
+- Relationships: apple → has colour → red; apple → contains → fibre; apple → contains → vitamin C
+
+The system should represent these concepts without losing the original sentences. It must identify which parts of the query are satisfied by which document passages.
+
+The compact semantic representation is used to improve retrieval, but the original document passages remain the authoritative evidence used to answer questions.
+
+The research hypothesis is that query-aware semantic representation, adaptive semantic chunking, semantic weighting, and context-aware reranking may improve retrieval quality and answer faithfulness compared with conventional fixed-size chunking. This must be evaluated experimentally rather than assumed.
+
+## 3. REQUIRED APPLICATION ARCHITECTURE
+
+Implement the following pipeline:
+
+DOCUMENT UPLOAD
+→ TEXT EXTRACTION
+→ DOCUMENT STRUCTURE ANALYSIS
+→ CONVENTIONAL CHUNKING BASELINE
+→ ADAPTIVE SEMANTIC CHUNKING
+→ SEMANTIC REPRESENTATION
+→ EMBEDDING GENERATION
+→ USER QUERY ANALYSIS
+→ QUERY SEMANTIC CHUNKING
+→ QUERY–DOCUMENT ALIGNMENT
+→ SIMILARITY AND COVERAGE SCORING
+→ SEMANTIC WEIGHTING
+→ CONTEXT-AWARE RERANKING
+→ EVIDENCE SELECTION
+→ GROUNDED ANSWER GENERATION
+→ CITATION VALIDATION
+→ EVALUATION AND VISUALIZATION
+
+Each stage must produce real, inspectable output. Record the intermediate results so the user can understand how the answer was produced.
+
+Do not create decorative processing stages that are not connected to actual application logic.
+
+## 4. DOCUMENT INGESTION
+
+Support uploading PDF, TXT, and DOCX documents where practical in the environment.
+
+Requirements:
+
+- Extract document text while preserving page numbers, paragraphs, headings, and source locations wherever available.
+- Assign stable source IDs to documents and source passages.
+- Display the extracted text and document metadata.
+- Show extraction errors clearly.
+- Reject unsupported or empty documents with useful error messages.
+- Allow users to inspect original text before processing.
+- Process uploaded documents through the actual pipeline.
+- Preserve original text even when generating a semantic representation.
+- Make it possible to upload another document and replace or add to the current document collection.
+- Keep uploaded document data isolated between independent sessions where practical.
+
+For PDF extraction, preserve page references when the extraction library supports them. For DOCX, preserve paragraph and heading structure where available.
+
+Never silently replace a failed upload with sample data.
+
+## 5. OBJECTIVE 1 — ADAPTIVE SEMANTIC CHUNKING
+
+Implement two genuinely different chunking methods.
+
+### A. Conventional fixed-size baseline
+
+Implement conventional chunking with configurable chunk size and overlap.
+
+- Use token-based chunking when a suitable tokenizer is available.
+- Otherwise use a documented character-based approximation.
+- Display the selected unit clearly.
+- Preserve source offsets or source sentence references.
+- Allow the user to adjust chunk size and overlap.
+- Show how fixed boundaries can split related information.
+- Never label character counts as token counts.
+
+### B. Adaptive semantic chunking
+
+Use AI-assisted semantic analysis and document structure to form meaningful chunks.
+
+The system should:
+
+1. Detect sentence and paragraph boundaries.
+2. Identify entities, attributes, actions, relationships, conditions, negations, qualifications, and relevant context.
+3. Identify sentences that belong together semantically.
+4. Group related content into adaptive chunks.
+5. Avoid arbitrary splits that separate a concept from its explanation.
+6. Respect headings, paragraph structure, and topic transitions.
+7. Preserve the original source passages and their references.
+8. Record why each chunk was created.
+9. Avoid combining unrelated passages merely because they contain similar words.
+10. Avoid excessive chunk sizes that exceed the configured processing limits.
+
+Each semantic chunk should contain:
+
+- Chunk ID
+- Original source passage or passages
+- Source page and location, if available
+- Semantic summary
+- Entities
+- Attributes
+- Relationships
+- Conditions and qualifications
+- Negation markers
+- Topic or concept labels
+- Chunk boundary rationale
+- Embedding vector or a clear indication that an embedding could not be generated
+
+Use Gemini structured output or a validated JSON schema for semantic extraction. Validate the returned structure and handle malformed model responses.
+
+Semantic representations must be traceable to the original source sentences. Do not fabricate facts or infer document content as if it were explicitly stated.
+
+### C. Visual comparison
+
+Display fixed-size and adaptive semantic chunks side by side.
+
+Highlight:
+
+- Entity names
+- Attributes and their values
+- Relationships between concepts
+- Conditions and qualifications
+- Negation
+- Semantic boundaries
+- Repeated or overlapping information
+- Source passage references
+
+Allow a user to click a chunk to see its original passage, semantic representation, boundary explanation, and metadata.
+
+Use real output from the current uploaded document, not hardcoded examples.
+
+## 6. QUERY SEMANTIC CHUNKING
+
+When the user enters a natural-language question, process the query independently from the document.
+
+For example:
+
+Query:
+“Under what conditions does the server reject requests, and what authentication requirement applies?”
+
+Represent it as query concepts such as:
+
+- Entity: server
+- Requested relation: rejects requests
+- Requested condition: when rejection occurs
+- Requested requirement: authentication
+- Requested relation: authentication → required for → request acceptance
+
+For each query, extract:
+
+- Main intent
+- Entities
+- Requested attributes
+- Requested relationships
+- Conditions
+- Negation
+- Constraints
+- Required answer components
+- Key terms and semantic concepts
+
+Support multiple semantic query chunks when the query contains multiple independent information requests.
+
+Assign each query concept an ID. These IDs must be used later to track coverage and evidence.
+
+The query representation must be visible and editable for debugging. Editing the representation must not silently change the original question.
+
+Do not assume every question can be reduced to individual keywords. Preserve relationships and the complete meaning of the original query.
+
+## 7. OBJECTIVE 2 — SEMANTIC VECTOR WEIGHTING
+
+Implement real semantic comparison between query representations and document representations.
+
+Where embeddings are available, use actual embedding vectors and calculate cosine similarity.
+
+For vectors A and B:
+
+cosine_similarity(A, B) = dot(A, B) / (norm(A) × norm(B))
+
+Handle zero vectors and failed embedding requests safely.
+
+Support these retrieval signals where implemented:
+
+1. Dense semantic similarity
+2. Query-concept coverage
+3. Entity and attribute alignment
+4. Relationship alignment
+5. Keyword or lexical relevance
+6. Context and source relevance
+7. Negation and condition compatibility
+
+Do not treat every signal as interchangeable. For example, semantic similarity measures relatedness, while query-concept coverage estimates whether the evidence answers all requested parts.
+
+Implement a configurable, documented scoring method.
+
+A possible initial formula is:
+
+Final score =
+w1 × normalized semantic similarity
++ w2 × query-concept coverage
++ w3 × relationship alignment
++ w4 × lexical relevance
+
+The weights must be configurable and their normalization must be documented. Start with a sensible, documented default and expose it in the interface.
+
+Only include a signal in the final formula when its underlying value has actually been calculated. If a signal is unavailable, disclose this and adjust the scoring method transparently rather than substituting fabricated values.
+
+Avoid double-counting highly correlated signals without explaining the choice.
+
+Display the individual component scores, weights, and final score for each candidate chunk.
+
+Do not hardcode similarity percentages or produce random scores to make the interface look convincing.
+
+## 8. QUERY–DOCUMENT ALIGNMENT ENGINE
+
+This is the central feature of the application.
+
+Create an interactive visualization that maps each query concept to the document chunks that support it.
+
+Example:
+
+Query concept: apple colour
+→ Document chunk D1
+→ Source sentence: “The apple is red.”
+→ Matched entity: apple
+→ Matched attribute: colour
+→ Matched value: red
+
+Query concept: apple nutrition
+→ Document chunk D2
+→ Source sentence: “It contains fibre and vitamin C.”
+→ Matched concept: nutrients
+→ Matched evidence: fibre, vitamin C
+
+The system should:
+
+- Show query concepts on one side.
+- Show document chunks on the other side.
+- Draw connections for actual detected alignments.
+- Allow clicking any connection to inspect its source text and matching rationale.
+- Show unmatched query concepts.
+- Show document chunks that are related but insufficient to answer a query.
+- Distinguish direct evidence from inferred semantic similarity.
+- Explain why a candidate was selected, reranked, or rejected.
+- Update the visualization whenever the query or document changes.
+
+Use a graph, node-link diagram, Sankey-style visualization, or interactive alignment matrix, whichever is most reliable in the environment.
+
+All connections must be generated from actual processing results. Do not predefine connections for the example above.
+
+## 9. DEFINE PARITY AS QUERY-CONCEPT COVERAGE
+
+Implement a clear, measurable concept called Query Coverage or Semantic Parity.
+
+Do not treat semantic similarity and parity as the same thing.
+
+For a query with N required concepts, define coverage as the fraction of those concepts supported by retrieved evidence.
+
+For example, if a query requires four concepts and retrieved evidence supports three, coverage is 3/4 = 0.75, or 75%.
+
+This calculation is valid only when the system has actually extracted four required concepts and determined that three are supported.
+
+Show:
+
+- Total required query concepts
+- Supported concepts
+- Partially supported concepts
+- Unsupported concepts
+- Coverage score
+- Evidence supporting each concept
+
+Explain that automatic concept extraction and evidence matching may be imperfect. Provide a way to inspect or correct the extracted query requirements during evaluation.
+
+Do not interpret high coverage as proof that every answer claim is correct.
+
+## 10. OBJECTIVE 3 — CONTEXT-AWARE RERANKING AND FILTERING
+
+After initial retrieval, implement a reranking stage that considers:
+
+- Semantic relevance
+- Missing query concepts
+- Relationship completeness
+- Source evidence quality
+- Conditions and qualifications
+- Contradictions
+- Negation
+- Redundant passages
+- Context-window limits
+
+Show the initial retrieval ranking and the final reranked ranking.
+
+For each chunk, explain:
+
+- Initial rank
+- Initial score
+- Reranking changes
+- Final rank
+- Why it moved up or down
+- Whether it was included in the final context
+- Which query concepts it supports
+
+Do not simply add a random score or use an LLM's unverified confidence as a correctness measure.
+
+If a relevant passage contains a qualification or negation, preserve it even if it reduces apparent similarity.
+
+If two source passages contradict one another, show the contradiction and both source references. Do not silently select whichever passage makes the answer easier.
+
+Allow the user to adjust the number of retrieved chunks and the maximum context budget.
+
+## 11. RETRIEVAL MODES
+
+Implement these modes where supported by the actual code:
+
+1. Conventional fixed-size chunk retrieval
+2. Adaptive semantic chunk retrieval
+3. Semantic representation retrieval
+4. Weighted hybrid retrieval
+5. Weighted retrieval with context-aware reranking
+
+The same query and document should be usable across all modes.
+
+The user must be able to switch modes and compare the actual retrieved passages, rankings, scores, and answer evidence.
+
+If a mode is unavailable because a dependency or API call failed, display that limitation rather than pretending the mode ran successfully.
+
+## 12. EVIDENCE-GROUNDED ANSWER GENERATION
+
+Generate the final answer using the retrieved original source passages.
+
+Requirements:
+
+- Pass only selected, traceable evidence to the answer-generation stage.
+- Preserve source IDs and citation metadata in the generation context.
+- Cite claims using the original document's page, paragraph, or passage references where available.
+- Make citations clickable.
+- Clicking a citation should open or highlight the original passage in the document viewer.
+- Answer each part of the user's question.
+- Do not treat the semantic summary alone as sufficient evidence.
+- Do not invent facts missing from the document.
+- Distinguish explicitly stated information from reasonable interpretation.
+- If evidence is insufficient, clearly state what is missing.
+- If only part of a question is answered by the document, answer that part and identify the unanswered portion.
+- If sources conflict, report the conflict.
+- If evidence cannot support an answer, abstain rather than fabricate an answer.
+
+Include an evidence support panel that maps each answer claim to its supporting source passage.
+
+Where practical, validate that each citation ID exists in the retrieved evidence and that the cited source text actually belongs to the uploaded document.
+
+Do not claim a perfect hallucination-free system. The purpose is to investigate whether the proposed approach reduces unsupported claims.
+
+## 13. FEATURE KEY AND VISUAL LANGUAGE
+
+Create a persistent feature key explaining the meaning of the visual elements.
+
+Use a clean, professional research dashboard with consistent colours:
+
+- Blue: entities and named concepts
+- Green: attributes, properties, and relationships
+- Amber: query-relevant information
+- Purple: query–document matches
+- Red: contradictions, negation warnings, or unsupported requirements
+- Grey: neutral or low-relevance information
+
+Use accessible contrast and do not rely on colour alone; provide labels, icons, and tooltips.
+
+The feature key must explain both the visual markings and the numerical measures.
+
+Include tooltips explaining semantic similarity, query coverage, relationship alignment, weighted score, retrieval rank, and evidence support.
+
+Never use the same colour for two different concepts without explaining the distinction.
+
+## 14. REQUIRED UI LAYOUT
+
+Build a polished, modern AI research dashboard.
+
+Use a professional dark theme by default, with a light-theme option if feasible. Prefer a restrained colour palette, readable typography, subtle borders, clear spacing, and meaningful charts.
+
+Avoid excessive gradients, neon colours, oversized decorative headings, fake terminal animations, or generic AI landing-page styling.
+
+### Main navigation
+
+1. Overview
+2. Document Workspace
+3. Chunk Explorer
+4. Query Alignment
+5. Retrieval Trace
+6. Answer & Citations
+7. Evaluation Lab
+
+### Overview
+
+Display actual session information:
+
+- Document name
+- Number of extracted pages or sections
+- Fixed-size chunk count
+- Semantic chunk count
+- Query count
+- Number of indexed vectors
+- Latest retrieval run
+- API or processing errors
+
+Do not display fabricated accuracy improvements or hallucination reduction percentages.
+
+### Document Workspace
+
+Include upload, text preview, extraction status, document structure, and source locations.
+
+### Chunk Explorer
+
+Include fixed-size and adaptive semantic chunk comparison, semantic labels, original text, and boundary explanations.
+
+### Query Alignment
+
+Include query concept extraction, document concept alignment, interactive links, unmatched concepts, and the feature key.
+
+### Retrieval Trace
+
+Include candidate chunks, individual score components, weighting, initial ranking, reranking, and final evidence selection.
+
+### Answer & Citations
+
+Include the user query, generated answer, source citations, evidence mapping, unsupported requirements, and abstention information.
+
+### Evaluation Lab
+
+Include baseline comparisons, per-question results, aggregate metrics, charts, and export options.
+
+All navigation items and controls must perform real actions. Do not leave placeholder buttons.
+
+## 15. EVALUATION LAB — CRITICAL RESEARCH REQUIREMENT
+
+Build an evaluation workflow that allows the researcher to compare methods fairly.
+
+Use the same documents, queries, answer-generation model, evaluation settings, and comparable retrieval budgets wherever possible.
+
+Compare:
+
+A. Conventional fixed-size chunking
+B. Adaptive semantic chunking
+C. Semantic representation retrieval
+D. Semantic vector weighting
+E. Semantic weighting with context-aware reranking
+
+Calculate applicable metrics from real evaluation records:
+
+- Precision@K
+- Recall@K
+- Mean Reciprocal Rank (MRR)
+- Query-concept coverage
+- Context precision
+- Context recall
+- Answer correctness
+- Faithfulness to source evidence
+- Citation support rate
+- Unsupported-claim rate
+- Abstention rate
+- Indexing latency
+- Retrieval latency
+- End-to-end latency
+- Context size or token usage, where measurable
+
+Requirements:
+
+1. Define each metric and its calculation.
+2. Allow creation of a small manually labelled benchmark with documents, queries, expected relevant passages, expected concepts, and reference answers.
+3. Allow the researcher to label relevant passages and verify extracted query concepts.
+4. Use those labels as ground truth where appropriate.
+5. Separate retrieval metrics from answer-quality metrics.
+6. Measure latency rather than inventing it.
+7. Record failed requests and incomplete runs.
+8. Show per-query results as well as aggregate results.
+9. Export results to CSV and JSON.
+10. Label results as preliminary if the benchmark is small.
+11. Do not present LLM-as-judge scores as objective ground truth.
+12. Never fabricate evaluation records or hardcode a claim such as “42% fewer hallucinations.”
+13. Include a clear distinction between actual runs, manually verified results, and illustrative examples.
+
+If there is no labelled benchmark, show “Evaluation dataset not configured” and guide the user to create one.
+
+Provide a small optional synthetic example dataset for demonstration, but label it prominently as synthetic demonstration data and keep it separate from real uploaded-document evaluation.
+
+The user must be able to run the same query through different retrieval methods and inspect the results side by side.
+
+## 16. EDGE CASES AND ADVERSARIAL TESTING
+
+Include test cases for:
+
+A. Negation:
+“The apple is not red; it is green.”
+
+A query asking whether the apple is red must not retrieve or represent the sentence as affirmative evidence that it is red.
+
+B. Conditional rules:
+“The server rejects requests when authentication is missing.”
+
+Preserve the relationship between rejection and the missing-authentication condition.
+
+C. Partial evidence:
+A query asks for colour, weight, and origin, but the document contains only colour and weight. The answer must identify origin as unsupported.
+
+D. Contradictions:
+Two passages provide different values for the same property. Show both passages and flag the inconsistency.
+
+E. Synonyms:
+A query uses wording different from the document while expressing a similar concept.
+
+F. Irrelevant passages:
+A long document includes passages that share keywords but do not answer the question.
+
+G. Multiple-part queries:
+Each requested component must be tracked separately.
+
+H. Missing or empty document:
+Display a useful error and do not generate a document-specific answer.
+
+I. Model/API failure:
+Preserve any available intermediate results and clearly show which stages failed.
+
+J. Long documents:
+Handle processing limits, chunking, and partial failures without silently dropping source references.
+
+## 17. TECHNICAL IMPLEMENTATION REQUIREMENTS
+
+Use the supported full-stack capabilities available in Google AI Studio Build mode.
+
+Preferred architecture:
+
+- React and TypeScript for the UI.
+- A server-side runtime for model calls and protected operations.
+- Gemini API for semantic extraction, structured outputs, and grounded answer generation.
+- An embedding model for actual semantic vectors.
+- A vector index or vector-search implementation suitable for the prototype.
+- A reliable PDF extraction library.
+- A DOCX extraction library where practical.
+- A visualization library for interactive alignment graphs and evaluation charts.
+- A validated schema for model-generated structured data.
+
+Keep document processing, semantic extraction, embedding generation, retrieval, scoring, reranking, answer generation, and evaluation in separate modules with clear interfaces.
+
+Use real calculations and deterministic scoring wherever possible.
+
+Add:
+
+- Input validation
+- Error handling
+- Loading and progress states
+- API retry handling where appropriate
+- Sensible request limits
+- Stable chunk and source IDs
+- Type-safe data structures
+- Reusable components
+- Useful logging without exposing secrets or private document contents unnecessarily
+
+Do not implement unnecessary user accounts, payment systems, external databases, or unrelated features.
+
+Use a local or in-memory index for the prototype if it is the most reliable choice. If the index does not persist across sessions, tell the user clearly.
+
+Do not pretend that a persistent vector database has been configured when it has not.
+
+Do not send private document contents to unrelated external services.
+
+If a required library, model, or service is not available, choose the simplest working alternative, disclose the substitution, and keep the architecture modular.
+
+## 18. RESEARCH TRACEABILITY
+
+Every retrieved result should be traceable through this chain:
+
+Original document
+→ Original passage
+→ Semantic chunk
+→ Semantic representation
+→ Embedding and score components
+→ Query-concept alignment
+→ Initial rank
+→ Reranking decision
+→ Selected evidence
+→ Generated answer claim
+→ Citation
+
+Create a trace inspector that lets the researcher follow this chain for any answer claim.
+
+Store the intermediate outputs needed to reproduce a run. Give each run a unique ID and record the selected method, parameters, model identifier when available, and timestamp.
+
+Make it possible to compare runs without mixing their results.
+
+## 19. IMPLEMENTATION PRIORITIES
+
+Build in this order, but continue through the complete implementation rather than stopping after the first screen:
+
+Priority 1:
+Functional document upload, text extraction, fixed-size chunking, adaptive semantic chunking, and side-by-side visualization.
+
+Priority 2:
+Query parsing, embeddings, semantic similarity, query-concept coverage, and weighted scoring.
+
+Priority 3:
+Interactive query–document alignment and retrieval trace.
+
+Priority 4:
+Context-aware reranking, evidence-grounded answer generation, and clickable citations.
+
+Priority 5:
+Evaluation Lab, benchmark labelling, real metric calculations, and CSV/JSON export.
+
+Priority 6:
+UI polish, edge-case handling, responsive design, and end-to-end testing.
+
+If the full implementation cannot be completed in one generation, preserve a working application and continue implementing the remaining modules. Do not replace unfinished functionality with static screenshots or hardcoded results.
+
+## 20. ACCEPTANCE TESTS
+
+Before declaring the application complete, actually test the following:
+
+1. Upload a real text document.
+2. Display its extracted content.
+3. Generate conventional fixed-size chunks.
+4. Generate adaptive semantic chunks.
+5. Compare both chunking outputs visually.
+6. Enter a natural-language query.
+7. Display the extracted query concepts.
+8. Calculate real semantic similarity when embeddings are available.
+9. Calculate query-concept coverage using inspectable evidence.
+10. Display real query-to-document alignment connections.
+11. Show initial retrieval and reranked results.
+12. Generate an answer from original evidence.
+13. Verify that citations point to actual source passages.
+14. Test a query that the document cannot answer.
+15. Test negation and conditional statements.
+16. Run at least one labelled retrieval evaluation.
+17. Confirm that metrics are calculated from recorded runs.
+18. Export evaluation results.
+19. Confirm that API keys are not exposed in browser code.
+20. Verify that the interface clearly identifies unavailable features and failed operations.
+
+Fix critical errors discovered during testing before claiming success.
+
+## 21. FINAL RESPONSE AFTER BUILDING
+
+After implementing and testing the application, provide a concise engineering report containing:
+
+- What is fully implemented
+- What was actually tested
+- What works in the live preview
+- What requires API configuration
+- What remains incomplete
+- Which metrics are currently measurable
+- Whether evaluation used real labelled data or synthetic examples
+- How to run the application
+- Any dependencies or limitations
+
+Be honest. Do not claim successful tests that were not run.
+
+## FINAL INSTRUCTION
+
+Build the actual Adaptive Semantic RAG Lab now.
+
+Prioritize correctness, inspectability, research traceability, real model integration, and an interactive visualization of the complete query–document retrieval process.
+
+The final application must let a user upload a document, ask a question, see how both are represented semantically, inspect the matching and scoring of document chunks, understand why evidence was retrieved, and receive an answer grounded in the original document.
+
+Every important visual element must be backed by real application data. Every score must have a documented calculation. Every answer claim must be traceable to evidence or explicitly marked as unsupported.

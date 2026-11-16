@@ -1,0 +1,6 @@
+{
+  "name": "Adaptive Semantic RAG Lab",
+  "description": "Query–Document Semantic Alignment and Adaptive Semantic Chunking for LLM Hallucination Reduction in Retrieval-Augmented Generation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
